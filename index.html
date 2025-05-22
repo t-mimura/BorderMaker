@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Image Border Application</title>
+</head>
+<body>
+  <h1>Welcome to Image Border App</h1>
+  <button id="select-images-btn">Select Images</button>
+  <div id="selected-files-list">
+    <!-- Selected files will be listed here -->
+  </div>
+
+  <hr>
+  <h3>Configure Borders:</h3>
+  <div>
+    <label for="black-border-thickness">Inner Black Border (px):</label>
+    <input type="number" id="black-border-thickness" value="5" min="0">
+  </div>
+  <br>
+  <div>
+    <label for="white-border-thickness">Outer White Border (px):</label>
+    <input type="number" id="white-border-thickness" value="5" min="0">
+  </div>
+  <hr>
+  <h3>Preview:</h3>
+  <div style="width: 100%; max-width: 500px; min-height: 100px; border: 1px solid #ccc; margin: 10px auto; display: flex; justify-content: center; align-items: center;">
+    <img id="image-preview" src="#" alt="Image Preview Area" style="max-width: 100%; max-height: 400px; display: none;">
+    <p id="preview-placeholder" style="display: block;">Select an image to see a preview.</p>
+  </div>
+  <hr>
+  <div>
+    <button id="select-output-folder-btn">Choose Output Folder</button>
+    <p>Output Folder: <span id="selected-output-folder">Not selected</span></p>
+  </div>
+  <hr>
+  <button id="process-save-btn" style="padding: 10px 20px; font-size: 16px;">Process and Save Images</button>
+  <p id="processing-status"></p> <!-- For status updates -->
+  <hr>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
