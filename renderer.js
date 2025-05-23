@@ -226,21 +226,21 @@ processSaveBtn.addEventListener('click', async () => {
       
       // Use originalExtension for the new filename
       const baseNameWithoutExt = originalFileNameWithExt.substring(0, originalFileNameWithExt.length - originalExtension.length);
-      // const newFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
+      const newFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
 
-      // --- Start of new code for filename generation ---
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const dateString = `${year}${month}${day}`;
+      // --- Reverted filename generation code below ---
+      // const currentDate = new Date();
+      // const year = currentDate.getFullYear();
+      // const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      // const day = String(currentDate.getDate()).padStart(2, '0');
+      // const dateString = `${year}${month}${day}`;
 
-      const typeString = originalExtension.substring(1).toUpperCase();
+      // const typeString = originalExtension.substring(1).toUpperCase();
       
-      const originalSimpleFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
+      // const originalSimpleFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
       
-      const newFileName = `smartconverter/output/${dateString}/${typeString}/${originalSimpleFileName}`;
-      // --- End of new code for filename generation ---
+      // const newFileName = `smartconverter/output/${dateString}/${typeString}/${originalSimpleFileName}`;
+      // --- End of reverted code ---
 
       const buffer = Buffer.from(dataUrl.split(',')[1], 'base64');
       
