@@ -1,5 +1,6 @@
 // renderer.js
 const { ipcRenderer } = require('electron');
+const path = require('path'); // Added path module
 
 const selectImagesBtn = document.getElementById('select-images-btn');
 const selectedFilesList = document.getElementById('selected-files-list');
@@ -215,7 +216,7 @@ processSaveBtn.addEventListener('click', async () => {
   for (let i = 0; i < totalImages; i++) {
     const imagePath = currentSelectedImagePaths[i];
     // Updated filename extraction to handle both / and \
-    const originalFileNameWithExt = imagePath.substring(imagePath.lastIndexOf(/[\/\\]/) + 1);
+    const originalFileNameWithExt = path.basename(imagePath); // Replaced with path.basename
     processingStatus.textContent = `Processing image ${i + 1} of ${totalImages}: ${originalFileNameWithExt}...`;
 
     const { mimeType, extension: originalExtension } = getImageType(imagePath); // Get type
