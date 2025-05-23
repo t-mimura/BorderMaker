@@ -1,5 +1,6 @@
 // renderer.js
 const { ipcRenderer } = require('electron');
+const path = require('path'); // Added path module
 
 const selectImagesBtn = document.getElementById('select-images-btn');
 const selectedFilesList = document.getElementById('selected-files-list');
@@ -215,7 +216,7 @@ processSaveBtn.addEventListener('click', async () => {
   for (let i = 0; i < totalImages; i++) {
     const imagePath = currentSelectedImagePaths[i];
     // Updated filename extraction to handle both / and \
-    const originalFileNameWithExt = imagePath.substring(imagePath.lastIndexOf(/[\/\\]/) + 1);
+    const originalFileNameWithExt = path.basename(imagePath); // Replaced with path.basename
     processingStatus.textContent = `Processing image ${i + 1} of ${totalImages}: ${originalFileNameWithExt}...`;
 
     const { mimeType, extension: originalExtension } = getImageType(imagePath); // Get type
@@ -227,20 +228,6 @@ processSaveBtn.addEventListener('click', async () => {
       // Use originalExtension for the new filename
       const baseNameWithoutExt = originalFileNameWithExt.substring(0, originalFileNameWithExt.length - originalExtension.length);
       const newFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
-
-      // --- Reverted filename generation code below ---
-      // const currentDate = new Date();
-      // const year = currentDate.getFullYear();
-      // const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-      // const day = String(currentDate.getDate()).padStart(2, '0');
-      // const dateString = `${year}${month}${day}`;
-
-      // const typeString = originalExtension.substring(1).toUpperCase();
-      
-      // const originalSimpleFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
-      
-      // const newFileName = `smartconverter/output/${dateString}/${typeString}/${originalSimpleFileName}`;
-      // --- End of reverted code ---
 
       const buffer = Buffer.from(dataUrl.split(',')[1], 'base64');
       
