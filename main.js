@@ -74,6 +74,9 @@ ipcMain.on('save-image', (event, { buffer, newFileName, outputFolderPath }) => {
   }
   const outputPath = nodePath.join(outputFolderPath, newFileName);
 
+  // Ensure the directory structure exists
+  fs.mkdirSync(nodePath.dirname(outputPath), { recursive: true });
+
   fs.writeFile(outputPath, buffer, (err) => {
     if (err) {
       console.error(`Failed to save image ${outputPath}:`, err);
