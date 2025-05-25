@@ -1,7 +1,7 @@
 {
-  "name": "image-border-app",
+  "name": "bordermaker",
   "version": "1.0.0",
-  "description": "",
+  "description": "An application to add borders to images.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.electron.myapp",
-    "productName": "My Electron App",
+    "productName": "BorderMaker",
     "directories": {
       "output": "dist/electron"
     },

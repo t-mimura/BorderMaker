@@ -4,21 +4,40 @@ FROM node:18-bullseye-slim
 # Set environment variables to non-interactive (for apt-get)
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install wine, mono, and other potential dependencies for electron-builder
-# Based on electron-builder documentation and common setups for Windows builds on Linux
+# Install Wine, p7zip, and other dependencies for electron-builder
+
+# Enable i386 architecture
+RUN dpkg --add-architecture i386 && \
+    apt-get update
+
+# Install prerequisites for WineHQ and other tools
+RUN apt-get install -y --no-install-recommends \
+    software-properties-common \
+    wget \
+    ca-certificates \
+    gnupg \
+    xz-utils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install WineHQ repository key
+RUN wget -O /tmp/winehq.key https://dl.winehq.org/wine-builds/winehq.key && \
+    apt-key add /tmp/winehq.key && \
+    rm /tmp/winehq.key
+
+# Add WineHQ repository for Debian Bullseye
+RUN echo "deb https://dl.winehq.org/wine-builds/debian/ bullseye main" > /etc/apt/sources.list.d/winehq.list
+
+# Update package lists again after adding new repo and install WineHQ
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     winehq-stable \
-    # mono-devel \ # Mono can be quite large, let's try without it first. Add if builds fail for specific targets.
-    # g++ \ # Usually not needed unless native modules require compilation for the host (Linux)
-    # build-essential \ # Same as above
-    # icnsutils \ # For macOS icons, not strictly needed for Windows
-    # graphicsmagick \ # For icon manipulation, but we're creating the icon beforehand
-    # xz-utils \ # For certain compression formats
-    # bsdmainutils \ # For certain utilities
-    # p7zip-full \ # For 7zip archives
+    p7zip-full \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Verify Wine installation
+RUN wine --version
 
 # Create app directory
 WORKDIR /usr/src/app
