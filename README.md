@@ -57,3 +57,32 @@ This is an Electron application designed to help users easily add customizable b
     npm start
     ```
     This will launch the Image Border Application.
+
+## Building for Windows (Portable Executable via Docker)
+
+This project is configured to build a portable Windows executable (.exe) using Docker. This ensures a consistent build environment.
+
+### Prerequisites
+
+*   **Docker:** Docker must be installed and running on your system.
+
+### Build Steps
+
+1.  **Ensure the build script is executable:**
+    If you've just cloned the repository or the script isn't executable, run:
+    ```bash
+    chmod +x build-via-docker.sh
+    ```
+
+2.  **Run the build script:**
+    Open a terminal in the project's root directory and execute the build script:
+    ```bash
+    ./build-via-docker.sh
+    ```
+    This script will:
+    *   Build a Docker image containing all necessary dependencies (like Node.js, Wine, and electron-builder).
+    *   Run a Docker container to build the Electron application.
+    *   The build process uses `electron-builder` configured for a portable Windows target.
+
+3.  **Locate the Executable:**
+    Upon successful completion, the portable Windows executable will be located in the `dist/electron` directory within your project folder. It will typically be a single `.exe` file (e.g., `My Electron App.exe` based on the `productName` in `package.json`).
