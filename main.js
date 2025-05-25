@@ -72,7 +72,7 @@ ipcMain.on('save-image', (event, { buffer, newFileName, outputFolderPath }) => {
 
   fs.writeFile(outputPath, buffer, (err) => {
     if (err) {
-      console.error(`Failed to save image ${outputPath}:', err);
+      console.error(`Failed to save image ${outputPath}:`, err);
     } else {
       console.log(`Image saved: ${outputPath}`);
     }
