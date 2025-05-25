@@ -1,6 +1,6 @@
 // renderer.js
 const { ipcRenderer } = require('electron');
-const path = require('path'); // Added path module
+const path = require('path');
 
 const selectImagesBtn = document.getElementById('select-images-btn');
 const selectedFilesList = document.getElementById('selected-files-list');
@@ -9,14 +9,13 @@ selectImagesBtn.addEventListener('click', () => {
   ipcRenderer.send('open-file-dialog');
 });
 
-// Border configuration
 const blackBorderInput = document.getElementById('black-border-thickness');
 const whiteBorderInput = document.getElementById('white-border-thickness');
 
-// Image Preview elements
 const imagePreview = document.getElementById('image-preview');
 const previewPlaceholder = document.getElementById('preview-placeholder');
 let currentPreviewImagePath = null;
+let currentSelectedImagePaths = []; // Stores all selected image paths
 
 function getBorderValues() {
   let black = parseInt(blackBorderInput.value, 10);
@@ -28,7 +27,6 @@ function getBorderValues() {
   return { blackThickness: black, whiteThickness: white };
 }
 
-// Helper function to get MIME type and extension
 function getImageType(imagePath) {
   const extension = imagePath.substring(imagePath.lastIndexOf('.')).toLowerCase();
   switch (extension) {
@@ -40,7 +38,7 @@ function getImageType(imagePath) {
     case '.webp':
       return { mimeType: 'image/webp', extension: extension };
     default:
-      return { mimeType: 'image/png', extension: '.png' };
+      return { mimeType: 'image/png', extension: '.png' }; // Default to PNG
   }
 }
 
@@ -79,14 +77,14 @@ function applyBordersToImage(imageSrc, blackThickness, whiteThickness, mimeType,
       if (mimeType === 'image/jpeg' || mimeType === 'image/webp') {
         resolve(canvas.toDataURL(mimeType, quality));
       } else {
-        resolve(canvas.toDataURL(mimeType)); // Defaults to image/png if mimeType is not supported for encoding
+        resolve(canvas.toDataURL(mimeType));
       }
     };
     image.onerror = (err) => {
       console.error("Failed to load image for processing:", imageSrc, err);
       reject(new Error('Failed to load image: ' + imageSrc));
     };
-    image.src = imageSrc; // For file paths, Electron with nodeIntegration handles file:// URLs
+    image.src = imageSrc;
   });
 }
 
@@ -99,14 +97,12 @@ function updatePreview() {
   }
 
   const { blackThickness, whiteThickness } = getBorderValues();
-  const black = Number.isFinite(blackThickness) && blackThickness >= 0 ? blackThickness : 0;
-  const white = Number.isFinite(whiteThickness) && whiteThickness >= 0 ? whiteThickness : 0;
-
+  
   previewPlaceholder.textContent = 'Generating preview...';
   previewPlaceholder.style.display = 'block';
   imagePreview.style.display = 'none';
 
-  applyBordersToImage(currentPreviewImagePath, black, white)
+  applyBordersToImage(currentPreviewImagePath, blackThickness, whiteThickness)
     .then(dataUrl => {
       imagePreview.src = dataUrl;
       imagePreview.style.display = 'block';
@@ -122,74 +118,42 @@ function updatePreview() {
 
 ipcRenderer.on('selected-files', (event, files) => {
   if (files && files.length > 0) {
-    console.log('Selected files:', files);
+    currentSelectedImagePaths = files;
     selectedFilesList.innerHTML = '<h3>Selected Images:</h3><ul>' +
-                                  files.map(file => `<li>${file}</li>`).join('') +
-                                  '</ul>';
-    currentPreviewImagePath = files[0]; // Use the first image for preview
-  } else {
-    console.log('No files selected.');
-    selectedFilesList.innerHTML = '<p>No images selected.</p>';
-    currentPreviewImagePath = null;
-  }
-  updatePreview(); // Update preview when selection changes
-});
-
-blackBorderInput.addEventListener('change', () => {
-  // const { blackThickness, whiteThickness } = getBorderValues(); // Already called in updatePreview
-  // console.log(`Border values changed: Black: ${blackThickness}px, White: ${whiteThickness}px`);
-  updatePreview(); // Update preview when border value changes
-});
-
-whiteBorderInput.addEventListener('change', () => {
-  // const { blackThickness, whiteThickness } = getBorderValues(); // Already called in updatePreview
-  // console.log(`Border values changed: Black: ${blackThickness}px, White: ${whiteThickness}px`);
-  updatePreview(); // Update preview when border value changes
-});
-
-// Initial call to set placeholder correctly if no image is auto-selected
-updatePreview();
-
-// Output Folder Selection
-const selectOutputFolderBtn = document.getElementById('select-output-folder-btn');
-const selectedOutputFolderDisplay = document.getElementById('selected-output-folder');
-let outputFolderPath = null;
-
-// Process and Save Button & Status
-const processSaveBtn = document.getElementById('process-save-btn');
-const processingStatus = document.getElementById('processing-status');
-let currentSelectedImagePaths = []; // To store all selected image paths
-
-ipcRenderer.on('selected-files', (event, files) => {
-  if (files && files.length > 0) {
-    currentSelectedImagePaths = files; // Store all selected files
-    console.log('Selected files:', files);
-    selectedFilesList.innerHTML = '<h3>Selected Images:</h3><ul>' +
-                                  files.map(file => `<li>${file}</li>`).join('') +
+                                  files.map(file => `<li>${path.basename(file)}</li>`).join('') +
                                   '</ul>';
     currentPreviewImagePath = files[0]; // Use the first image for preview
   } else {
     currentSelectedImagePaths = [];
-    console.log('No files selected.');
     selectedFilesList.innerHTML = '<p>No images selected.</p>';
     currentPreviewImagePath = null;
   }
   updatePreview(); // Update preview when selection changes
 });
 
+blackBorderInput.addEventListener('change', updatePreview);
+whiteBorderInput.addEventListener('change', updatePreview);
+
+updatePreview(); // Initial call
+
+const selectOutputFolderBtn = document.getElementById('select-output-folder-btn');
+const selectedOutputFolderDisplay = document.getElementById('selected-output-folder');
+let outputFolderPath = null;
+
+const processSaveBtn = document.getElementById('process-save-btn');
+const processingStatus = document.getElementById('processing-status');
 
 selectOutputFolderBtn.addEventListener('click', () => {
   ipcRenderer.send('open-output-folder-dialog');
 });
 
 ipcRenderer.on('output-folder-selected', (event, folderPath) => {
-  if (folderPath && folderPath.length > 0) {
-    const actualPath = Array.isArray(folderPath) ? folderPath[0] : folderPath;
-    outputFolderPath = actualPath;
-    selectedOutputFolderDisplay.textContent = actualPath;
-    console.log('Output folder selected:', actualPath);
+  if (folderPath) { // folderPath is now a single path string or null from main.js
+    outputFolderPath = folderPath;
+    selectedOutputFolderDisplay.textContent = folderPath;
   } else {
-    console.log('Output folder selection cancelled or no folder chosen.');
+    // No change or selection cancelled, outputFolderPath remains as is or null
+    // selectedOutputFolderDisplay.textContent = 'Not selected'; // Optionally reset
   }
 });
 
@@ -205,7 +169,7 @@ processSaveBtn.addEventListener('click', async () => {
     return;
   }
 
-  processSaveBtn.disabled = true; // Disable button
+  processSaveBtn.disabled = true;
   processingStatus.textContent = 'Starting processing...';
 
   const { blackThickness, whiteThickness } = getBorderValues();
@@ -215,26 +179,21 @@ processSaveBtn.addEventListener('click', async () => {
 
   for (let i = 0; i < totalImages; i++) {
     const imagePath = currentSelectedImagePaths[i];
-    // Updated filename extraction to handle both / and \
-    const originalFileNameWithExt = path.basename(imagePath); // Replaced with path.basename
+    const originalFileNameWithExt = path.basename(imagePath);
     processingStatus.textContent = `Processing image ${i + 1} of ${totalImages}: ${originalFileNameWithExt}...`;
 
-    const { mimeType, extension: originalExtension } = getImageType(imagePath); // Get type
+    const { mimeType, extension: originalExtension } = getImageType(imagePath);
 
     try {
-      // Pass mimeType to applyBordersToImage
       const dataUrl = await applyBordersToImage(imagePath, blackThickness, whiteThickness, mimeType);
-      
-      // Use originalExtension for the new filename
       const baseNameWithoutExt = originalFileNameWithExt.substring(0, originalFileNameWithExt.length - originalExtension.length);
       const newFileName = `${baseNameWithoutExt}_bordered${originalExtension}`;
-
       const buffer = Buffer.from(dataUrl.split(',')[1], 'base64');
       
-      ipcRenderer.send('save-image', { buffer, newFileName, outputFolderPath, originalPath: imagePath });
+      ipcRenderer.send('save-image', { buffer, newFileName, outputFolderPath });
       successCount++;
     } catch (error) {
-      console.error(`Error processing ${imagePath}:`, error);
+      console.error(`Error processing ${imagePath}:', error);
       errorCount++;
     }
   }
@@ -246,7 +205,5 @@ processSaveBtn.addEventListener('click', async () => {
     finalMessage = `Processing complete! All ${successCount} images saved successfully to ${outputFolderPath}.`;
   }
   processingStatus.textContent = finalMessage;
-  // setTimeout(() => { processingStatus.textContent = ''; }, 10000); 
-
-  processSaveBtn.disabled = false; // Re-enable button
+  processSaveBtn.disabled = false;
 });
