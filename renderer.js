@@ -193,7 +193,7 @@ processSaveBtn.addEventListener('click', async () => {
       ipcRenderer.send('save-image', { buffer, newFileName, outputFolderPath });
       successCount++;
     } catch (error) {
-      console.error(`Error processing ${imagePath}:', error);
+      console.error(`Error processing ${imagePath}:`, error);
       errorCount++;
     }
   }
